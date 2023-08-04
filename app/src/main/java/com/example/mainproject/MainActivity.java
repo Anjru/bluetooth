@@ -16,7 +16,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -32,6 +34,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -58,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> enableBluetoothLauncher;
     private ActivityResultLauncher<Intent> discoverableLauncher;
+
+    private boolean pressedList = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void on(View v) throws IOException {
+    public void on(View v) throws IOException, InterruptedException {
         if (!bluetoothAdapter.isEnabled()) {
             //turns on
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
@@ -143,29 +148,35 @@ public class MainActivity extends AppCompatActivity {
             if (device.getName().equals("DSD TECH HC-05")) {
                 targetDevice = device;
                 break;
+            } else {
+
             }
         }
 
         if (targetDevice != null) {
             // Target device found, proceed with establishing a connection
             // using the targetDevice BluetoothDevice object
+            Log.d("arduino","Made it");
         } else {
             // Target device not found or not paired
             // Handle the situation accordingly
         }
+        Log.d("Arduino, attempting task","");
+        BluetoothConnectionTask connectionTask = new BluetoothConnectionTask(this);
+        connectionTask.start();
+        connectionTask.connectToDevice(targetDevice);
+        Log.d("Arduino", "Set taskthreads");
+        //Thread.sleep(1000);
+        //while (true) {
 
-        // Get the input and output streams from the socket
-        InputStream inputStream = socket.getInputStream();
-        OutputStream outputStream = socket.getOutputStream();
-
-// Send data
-        String message = "Hello, Bluetooth Device!";
-        outputStream.write(message.getBytes());
-
-// Receive data
-        byte[] buffer = new byte[1024];
-        int bytesRead = inputStream.read(buffer);
-        String receivedMessage = new String(buffer, 0, bytesRead);
+            //connectionTask.btread();
+            //int x = connectionTask.getXint();
+            //int y = connectionTask.getYint();
+            //move(x,y);
+            //dotView = findViewById(R.id.dot_view);
+            //dotView.setX(dotView.getX()+x);
+            //dotView.setY(dotView.getY()+y);
+        //}
     }
 
     public void off(View v) {
@@ -231,18 +242,28 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("MissingPermission")
     public void getPairedDevices(){
-        pairedDevices = bluetoothAdapter.getBondedDevices();
-        ArrayList list = new ArrayList();
+        if(!pressedList) {
+            pairedDevices = bluetoothAdapter.getBondedDevices();
+            ArrayList list = new ArrayList();
 
-        for(BluetoothDevice bt : pairedDevices) {
-            list.add((bt.getName()));
+            for (BluetoothDevice bt : pairedDevices) {
+                list.add((bt.getName()));
+            }
+
+            Toast.makeText(getApplicationContext(), "Showing Paired Devices", Toast.LENGTH_SHORT).show();
+
+            final ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
+
+            lv.setAdapter(adapter);
+            pressedList = true;
+        } else {
+            ArrayList list = new ArrayList();
+            final ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
+            lv.setAdapter(adapter);
+            pressedList = false;
         }
-
-        Toast.makeText(getApplicationContext(), "Showing Paired Devices",Toast.LENGTH_SHORT).show();
-
-        final ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, list);
-
-        lv.setAdapter(adapter);
     }
 
+
 }
+
