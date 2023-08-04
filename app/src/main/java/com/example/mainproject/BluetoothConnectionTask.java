@@ -32,6 +32,9 @@ public class BluetoothConnectionTask extends HandlerThread {
 
     private Context context;
 
+    private int xint = 0;
+    private int yint = 0;
+
     public BluetoothConnectionTask(Context context) {
         super("BluetoothConnectionTask");
         this.context = context;
@@ -100,21 +103,40 @@ public class BluetoothConnectionTask extends HandlerThread {
                             offset++;
                         }
 
-                        /**
+
                         if(buffer[offset] == 'x'){
-                            x = new String(buffer, offset+1, 2);
+                            if(buffer[offset+1] == '-'){
+                                x = new String(buffer, offset+2, 1);
+                                x = "-" + x;
+                                Log.d("Arduino", "x "+x);
+                            } else {
+                                x = new String(buffer, offset + 1, 1);
+                                Log.d("Arduino", "x " + x);
+                            }
 
                         } else if(buffer[offset] == 'y'){
-                            y = new String(buffer, offset+1, 2);
+                            if(buffer[offset+1] == '-'){
+                                y = new String(buffer, offset+2, 1);
+                                y = "-" + y;
+                                Log.d("Arduino", "y "+y);
+                            } else {
+                                y = new String(buffer, offset + 1, 1);
+                                Log.d("Arduino", "y " + y);
+                            }
                         }
-                         */
 
-                        String receivedData = new String(buffer, offset, 3);
-                        Log.d("Arduino", receivedData);
 
-                        //int xint = Integer.parseInt(x);
-                        //int yint = Integer.parseInt(y);
-                        //move(xint,yint);
+                        //String receivedData = new String(buffer, offset, 3);
+                        //Log.d("Arduino", receivedData);
+                        try {
+                            xint = Integer.parseInt(x);
+                            Log.d("Arduino", "x pars " + xint);
+                            yint = Integer.parseInt(y);
+                            Log.d("Arduino", "y parse " + yint);
+                            //move(xint,yint);
+                        } catch (NumberFormatException n) {
+                            Log.d("Arduino", n.toString());
+                        }
 
                     }
 
@@ -150,6 +172,11 @@ public class BluetoothConnectionTask extends HandlerThread {
         }
     }
 
+    public int getXint() {
+        return xint;
+    }
 
-
+    public int getYint(){
+        return yint;
+    }
 }
