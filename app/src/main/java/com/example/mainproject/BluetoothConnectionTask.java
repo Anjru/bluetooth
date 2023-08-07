@@ -35,6 +35,11 @@ public class BluetoothConnectionTask extends HandlerThread {
     private int xint = 0;
     private int yint = 0;
 
+    private MainActivity activity;
+
+    private boolean running = true;
+
+
     public BluetoothConnectionTask(Context context) {
         super("BluetoothConnectionTask");
         this.context = context;
@@ -94,8 +99,8 @@ public class BluetoothConnectionTask extends HandlerThread {
                     String x = new String();
                     String y = new String();
 
-                    while(true) {
-
+                    while(running) {
+                        Thread.sleep(100);
                         byte[] buffer = new byte[1024];
                         int bytesRead = inputStream.read(buffer);
                         int offset = 0;
@@ -108,20 +113,20 @@ public class BluetoothConnectionTask extends HandlerThread {
                             if(buffer[offset+1] == '-'){
                                 x = new String(buffer, offset+2, 1);
                                 x = "-" + x;
-                                Log.d("Arduino", "x "+x);
+
                             } else {
                                 x = new String(buffer, offset + 1, 1);
-                                Log.d("Arduino", "x " + x);
+
                             }
 
                         } else if(buffer[offset] == 'y'){
                             if(buffer[offset+1] == '-'){
                                 y = new String(buffer, offset+2, 1);
                                 y = "-" + y;
-                                Log.d("Arduino", "y "+y);
+
                             } else {
                                 y = new String(buffer, offset + 1, 1);
-                                Log.d("Arduino", "y " + y);
+
                             }
                         }
 
@@ -137,7 +142,7 @@ public class BluetoothConnectionTask extends HandlerThread {
                         } catch (NumberFormatException n) {
                             Log.d("Arduino", n.toString());
                         }
-
+                    updateDotPosition(xint, yint);
                     }
 
 
@@ -149,6 +154,8 @@ public class BluetoothConnectionTask extends HandlerThread {
                 e.printStackTrace();
                 Log.d("Arduino", e.toString());
                 // Handle connection or read errors here
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             } finally {
                 // Close the socket and input stream when you're done
                 try {
@@ -166,7 +173,17 @@ public class BluetoothConnectionTask extends HandlerThread {
         });
     }
 
+    private void updateDotPosition(int x, int y) {
+        if (context instanceof MainActivity) {
+            ((MainActivity) context).runOnUiThread(() -> {
+                ((MainActivity) context).updateDotPosition(x, y);
+            });
+            Log.d("Arduino", "Update Pos");
+        }
+    }
+
     public void cancel() {
+        running = false;
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
@@ -179,4 +196,6 @@ public class BluetoothConnectionTask extends HandlerThread {
     public int getYint(){
         return yint;
     }
+
+
 }

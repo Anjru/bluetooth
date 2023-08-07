@@ -16,6 +16,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.ParcelUuid;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import kotlinx.coroutines.selects.SelectClause1;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -81,14 +84,14 @@ public class MainActivity extends AppCompatActivity {
         buttonLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dotView.setX(dotView.getX() - 10);
+                dotView.setX(dotView.getX() - 1000);
             }
         });
 
         buttonRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dotView.setX(dotView.getX() + 10);
+                dotView.setX(dotView.getX() + 1000);
             }
         });
 
@@ -166,17 +169,21 @@ public class MainActivity extends AppCompatActivity {
         connectionTask.start();
         connectionTask.connectToDevice(targetDevice);
         Log.d("Arduino", "Set taskthreads");
-        //Thread.sleep(1000);
-        //while (true) {
 
+        /**
+        while (true) {
+            Thread.sleep(100);
+            Log.d("Arduino","moving?");
             //connectionTask.btread();
-            //int x = connectionTask.getXint();
-            //int y = connectionTask.getYint();
+            int x = connectionTask.getXint();
+            int y = connectionTask.getYint();
             //move(x,y);
-            //dotView = findViewById(R.id.dot_view);
-            //dotView.setX(dotView.getX()+x);
-            //dotView.setY(dotView.getY()+y);
-        //}
+            dotView.draw(dotView.getX() + x, dotView.getY() + y);
+            dotView.invalidate();
+
+
+        }
+         */
     }
 
     public void off(View v) {
@@ -262,6 +269,11 @@ public class MainActivity extends AppCompatActivity {
             lv.setAdapter(adapter);
             pressedList = false;
         }
+    }
+
+    public void updateDotPosition(int x, int y) {
+        dotView.draw(dotView.getX() + x, dotView.getY() + y);
+        dotView.invalidate();
     }
 
 
